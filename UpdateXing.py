@@ -44,31 +44,64 @@ def Do():
     global end
     if start:
         update_workbook = xlrd.open_workbook(updateExcelUrl)
-        u_table = update_workbook.sheets()[6]#最后一个sheet
+        u_table = update_workbook.sheets()[5]#最后一个sheet
         u_rowCount = u_table.nrows
         u_colCount = u_table.ncols
 
         wb = load_workbook(filename=updateExcelUrl)
         load_worksheet = wb.active
-        load_worksheet = wb['UpdateSheet']
+        load_worksheet = wb['update']
+
+
+        #curSaveAddRow=1
+
 
         # 主代码---------------
         for curExcelUrl in curExcelUrls:
-            workbook = xlrd.open_workbook(curExcelUrl)
+            workbook = xlrd.open_workbook(curDirUrl+'\\'+curExcelUrl)
             table = workbook.sheets()[0]
             rowCount = table.nrows
             colCount = table.ncols
+
+            #中间的标题--------------------------------
+            # u_rowCount = u_table.nrows
+            #
+            # load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value=' ')
+            # curSaveAddRow=curSaveAddRow + 1
+            # load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value=curExcelUrl)
+            # curSaveAddRow=curSaveAddRow + 1
+            # load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value=' ')
+            # curSaveAddRow=curSaveAddRow + 1
+
+            #-----------------
+
             for i in range(rowCount):
                 name=str(table.cell_value(i,0))#名称
                 features=str(table.cell_value(i,1))#特征
+                unit=str(table.cell_value(i,2))#单位
                 value=str(table.cell_value(i,3))#值
 
                 for u_row in range(u_rowCount):
-                    u_name = str(u_table.cell_value(i, 0))  # 需更新的名称
-                    u_features = str(u_table.cell_value(i, 1))  # 需更新的特征
-                    u_value = str(u_table.cell_value(i, 3))  # 需更新的值
+                    u_name = str(u_table.cell_value(u_row, 0))  # 需更新的名称
+                    u_features = str(u_table.cell_value(u_row, 1))  # 需更新的特征
+                    u_unit=str(u_table.cell_value(u_row,2))
+                    u_value = str(u_table.cell_value(u_row, 3))  # 需更新的值
                     if(u_name==name and u_features==features):
-                        load_worksheet.cell(row=u_row, column=3, value=value)
+                        print(name)
+                        print(features)
+                        print(value)
+                        #load_worksheet.cell(row=u_row, column=3, value=value)
+
+            #空白填入-------------------
+                # u_rowCount = u_table.nrows
+                # u_colCount = u_table.ncols
+                # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=1, value=name)
+                # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=2, value=features)
+                # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=3, value=value)
+                # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=4, value=unit)
+                # curSaveAddRow=curSaveAddRow+1
+            #---------------------------------
+
 
         print('存储中……')
         wb.save(updateExcelUrl)
@@ -122,7 +155,9 @@ def GetExcelUrls(curDirUrl):
     dirlist=os.listdir(curDirUrl)
     for url in dirlist:
         if('.xlsx') in url:
-            list.append(curDirUrl+'\\'+url)
+            #list.append(curDirUrl+'\\'+url)
+            list.append(url)
+
     return list
 if __name__ == '__main__':
     k = PyKeyboard()
@@ -133,8 +168,8 @@ if __name__ == '__main__':
     curCount = 0
     # saveExcelUrl = r"C:\Users\123\Desktop\广联达\安装\save.xlsx"  # to do-------------
     curExcelUrls=[]#当月的信息价的所有excel
-    updateExcelUrl = r"C:\Users\Administrator\Desktop\save.xlsx"  # to do-------------
-    curDirUrl=r'C:\Users\123\Desktop\广联达\安装'
+    updateExcelUrl = r"C:\Users\Administrator\Desktop\Xing.xlsx"  # to do-------------
+    curDirUrl=r'C:\Users\Administrator\Desktop\Xing\allxings'
     curExcelUrls =GetExcelUrls(curDirUrl)
     print(curExcelUrls)
 
