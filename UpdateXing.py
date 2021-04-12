@@ -53,17 +53,18 @@ def Do():
         load_worksheet = wb['update']
 
 
-        #curSaveAddRow=1
-
+        curSaveAddRow=1
+        addLists=[]
 
         # 主代码---------------
         for curExcelUrl in curExcelUrls:
             workbook = xlrd.open_workbook(curDirUrl+'\\'+curExcelUrl)
+            print('开始：'+curExcelUrl)
             table = workbook.sheets()[0]
             rowCount = table.nrows
             colCount = table.ncols
 
-            #中间的标题--------------------------------
+            # 中间的标题--------------------------------①
             # u_rowCount = u_table.nrows
             #
             # load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value=' ')
@@ -73,7 +74,8 @@ def Do():
             # load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value=' ')
             # curSaveAddRow=curSaveAddRow + 1
 
-            #-----------------
+            # -----------------①
+
 
             for i in range(rowCount):
                 name=str(table.cell_value(i,0))#名称
@@ -81,31 +83,100 @@ def Do():
                 unit=str(table.cell_value(i,2))#单位
                 value=str(table.cell_value(i,3))#值
 
+                isExist=False
+                #之后每次更新用这个---------------②
                 for u_row in range(u_rowCount):
                     u_name = str(u_table.cell_value(u_row, 0))  # 需更新的名称
                     u_features = str(u_table.cell_value(u_row, 1))  # 需更新的特征
-                    u_unit=str(u_table.cell_value(u_row,2))
-                    u_value = str(u_table.cell_value(u_row, 3))  # 需更新的值
-                    if(u_name==name and u_features==features):
+                    u_value=str(u_table.cell_value(u_row,2)) # 需更新的值
+                    u_unit = str(u_table.cell_value(u_row, 3)) #单位
+                    if(u_name==name and u_features==features and u_value!=value):
+                        print('更新：')
                         print(name)
                         print(features)
                         print(value)
-                        #load_worksheet.cell(row=u_row, column=3, value=value)
 
-            #空白填入-------------------
-                # u_rowCount = u_table.nrows
-                # u_colCount = u_table.ncols
-                # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=1, value=name)
-                # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=2, value=features)
-                # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=3, value=value)
-                # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=4, value=unit)
-                # curSaveAddRow=curSaveAddRow+1
-            #---------------------------------
+                        load_worksheet.cell(row=u_row+1, column=3, value=value)#改值
+
+                    if(isExist == False):
+                        isExist=u_name == name and u_features == features
+
+                        if(isExist is False):
+                            # 只改了特征，但价格，名称相同的不算新增-----
+                            isExist=u_name ==name and value==u_value and u_features!=features
+                            # if(isExist):
+                            #     print('改了特征，但价格相同-------')
+                            #     print('广材中：')
+                            #     print(name)
+                            #     print(features)
+                            #     print(value)
+                            #     print('xing中：')
+                            #     print(u_name)
+                            #     print(u_features)
+                            #     print(u_value)
+
+                # 之后每次更新用这个---------------②
+
+
+            # 空白填入-------------------①
+            # u_rowCount = u_table.nrows
+            # u_colCount = u_table.ncols
+            # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=1, value=name)
+            # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=2, value=features)
+            # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=3, value=value)
+            # load_worksheet.cell(row=u_rowCount+curSaveAddRow, column=4, value=unit)
+            # curSaveAddRow=curSaveAddRow+1
+            # ---------------------------------①
+
+        # 更新添加新项目---------------②
+                if(not isExist):
+                    print('新添加：')
+                    print(name)
+                    print(features)
+                    l=[]
+                    l.append(name)
+                    l.append(features)
+                    l.append(value)
+                    l.append(unit)
+
+                    addlist_isExist=False
+                    for add in addLists:
+                        _n = l[0]
+                        _f = l[1]
+                        if(_n==name and _f==features):
+                            addlist_isExist=True
+                    if(addlist_isExist==False):
+                        addLists.append(l)
+
+        if(len(addLists)>0):
+            u_rowCount = u_table.nrows
+            load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value=' ')
+            curSaveAddRow = curSaveAddRow + 1
+            load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value='----新添加----')
+            curSaveAddRow = curSaveAddRow + 1
+            load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value=' ')
+            curSaveAddRow = curSaveAddRow + 1
+        for l in addLists:
+            list_name=l[0]
+            list_features=l[1]
+            list_value=l[2]
+            list_unit=l[3]
+
+            u_rowCount = u_table.nrows
+            u_colCount = u_table.ncols
+            load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=1, value=list_name)
+            load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=2, value=list_features)
+            load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=3, value=list_value)
+            load_worksheet.cell(row=u_rowCount + curSaveAddRow, column=4, value=list_unit)
+            curSaveAddRow = curSaveAddRow + 1
+        # 更新添加新项目---------------②
+
+
 
 
         print('存储中……')
         wb.save(updateExcelUrl)
-        print('存储完毕')
+        print('存储完毕!!!')
     start=False
 
 
@@ -136,6 +207,7 @@ def onpressed(Key):
             global start
             start = True
             print('go')
+
         if (Key == keyboard.Key.f3):  # 结束
             if (saving):
                 print('it''s saving !! not yet')
@@ -168,8 +240,9 @@ if __name__ == '__main__':
     curCount = 0
     # saveExcelUrl = r"C:\Users\123\Desktop\广联达\安装\save.xlsx"  # to do-------------
     curExcelUrls=[]#当月的信息价的所有excel
+    #updateExcelUrl = r"C:\Users\Administrator\Desktop\Xing.xlsx"  # to do-------------
     updateExcelUrl = r"C:\Users\Administrator\Desktop\Xing.xlsx"  # to do-------------
-    curDirUrl=r'C:\Users\Administrator\Desktop\Xing\allxings'
+    curDirUrl=r'C:\Users\Administrator\Desktop\Xing\allxings\1'
     curExcelUrls =GetExcelUrls(curDirUrl)
     print(curExcelUrls)
 
@@ -179,8 +252,8 @@ if __name__ == '__main__':
     for t in threads:
         t.setDaemon(True)
         t.start()
-    print('press Capital to start,记得手动关')
-
+    print('press Capital to start,')
+    print('运行完excel点击计算下，不然xing识别不了！！！！！！')
     with keyboard.Listener(on_press=onpressed) as listener:
         listener.join()
 
